@@ -2,6 +2,13 @@
 
 Run an autonomous AI agent on EC2 with access to x402 payment APIs (USDC on Base).
 
+## Paste this into your agent
+
+```text
+Read https://github.com/Merit-Systems/OpenClawX402 and help me run OpenClaw on AWS with x402 configured.
+
+If the user already has OpenClaw setup, just help them configure x402 support.
+```
 ## Prerequisites
 
 Before starting, prepare:
