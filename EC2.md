@@ -50,7 +50,7 @@ aws ec2 describe-security-groups \
   --output text
 ```
 
-Save the security group ID (e.g., `sg-0123456789abcdef0`).
+**SAVE** the security group ID (e.g., `sg-0123456789abcdef0`) - you'll need it for launch.
 
 ## 3. Import SSH Key
 
@@ -134,7 +134,28 @@ openclaw config set channels.telegram.default.token "<your-telegram-bot-token>"
 openclaw pair add <your-telegram-user-id> --channel telegram
 ```
 
-## 8. Create Systemd Service
+Also configure git for your bot account (see [github.md](github.md#3-configure-git-on-ec2)):
+
+```bash
+git config --global user.name "yourname-clawdbot"
+git config --global user.email "yourname+clawdbot@gmail.com"
+git config --global credential.helper store
+```
+
+## 8. Prepare Secrets
+
+Before creating the service, gather these values:
+
+```bash
+# Generate a random gateway token
+openssl rand -hex 16
+```
+
+**SAVE** the output as your `OPENCLAW_GATEWAY_TOKEN`.
+
+You also need your **Anthropic API key** from [console.anthropic.com](https://console.anthropic.com) (Settings > API Keys).
+
+## 9. Create Systemd Service
 
 ```bash
 sudo tee /etc/systemd/system/openclaw.service > /dev/null << 'EOF'
@@ -161,7 +182,7 @@ Replace:
 - `<your-anthropic-api-key>` with your Anthropic API key
 - `<choose-a-secret-token>` with a random string (e.g., `openssl rand -hex 16`)
 
-## 9. Start Service
+## 10. Start Service
 
 ```bash
 sudo systemctl daemon-reload
@@ -172,7 +193,7 @@ sudo systemctl start openclaw
 sudo systemctl status openclaw
 ```
 
-## 10. Verify
+## 11. Verify
 
 ```bash
 # Check gateway is running
