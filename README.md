@@ -98,14 +98,26 @@ Based on the user's answers, they need different prerequisites:
 ### Scenario B: Fresh Install on Local Machine
 1. Complete [`./telegram.md`](./telegram.md)
 2. Complete [`./github.md`](./github.md)
-3. **Skip EC2.md** - Install OpenClaw locally instead:
+3. **Skip EC2.md** - Install OpenClaw locally using the official installer:
    ```bash
-   git clone https://github.com/anthropics/claude-code.git openclaw
-   cd openclaw
-   npm install
+   # macOS/Linux
+   curl -fsSL https://openclaw.ai/install.sh | bash
+
+   # Windows (PowerShell)
+   iwr -useb https://openclaw.ai/install.ps1 | iex
    ```
-4. Follow [`./x402.md`](./x402.md) to add x402 support
-5. Run OpenClaw and message your Telegram bot
+4. **Run the onboard wizard** (see [official docs](https://docs.openclaw.ai/start/wizard)):
+   ```bash
+   openclaw onboard --install-daemon
+   ```
+   The wizard configures auth, gateway settings, and channels interactively.
+5. **Add Telegram channel** (if not done during onboard):
+   ```bash
+   openclaw channels add --channel telegram --token "$TELEGRAM_BOT_TOKEN"
+   openclaw pairing list telegram  # See pending pairing requests
+   ```
+6. Follow [`./x402.md`](./x402.md) to add x402 support
+7. Message your Telegram bot (approve pairing when prompted)
 
 ### Scenario C: Existing OpenClaw Installation (any environment)
 1. Verify [`./telegram.md`](./telegram.md) is complete
@@ -170,24 +182,32 @@ For fresh installs, **don't manually configure** `openclaw.json`, systemd servic
 
 ### Telegram Setup Issues
 
-1. **Enable the plugin first**: Before adding a Telegram channel, enable the plugin:
+1. **Add Telegram via CLI**: Use the channels CLI to add Telegram:
    ```bash
-   openclaw plugins enable telegram
+   openclaw channels add --channel telegram --token "$TELEGRAM_BOT_TOKEN"
    ```
 
 2. **Pairing vs Allowlist**: By default, `dmPolicy: "pairing"` requires users to be approved via:
    ```bash
-   openclaw pairing list --channel telegram
-   openclaw pairing approve <CODE> --channel telegram
+   openclaw pairing list telegram
+   openclaw pairing approve telegram <CODE>
    ```
 
-   Alternatively, use `dmPolicy: "allowlist"` with explicit user IDs:
+   Alternatively, configure allowlist mode via the CLI:
    ```bash
+   openclaw configure --section channels
+   # Or directly set config values:
    openclaw config set channels.telegram.dmPolicy allowlist
    openclaw config set channels.telegram.allowFrom '[YOUR_TELEGRAM_USER_ID]'
    ```
 
-3. **Finding your Telegram User ID**: Message `@getmyid_bot` on Telegram (not your bot's ID which appears at the start of the bot token).
+3. **Finding your Telegram User ID** (no third-party bot needed):
+   ```bash
+   # Start the gateway and DM your bot, then check logs:
+   openclaw logs --follow
+   # Look for "from.id" in the output
+   ```
+   Or message `@userinfobot` on Telegram.
 
 4. **Restart after config changes**: Always restart the gateway after config changes:
    ```bash
@@ -196,7 +216,11 @@ For fresh installs, **don't manually configure** `openclaw.json`, systemd servic
 
 ### Gateway Token Errors
 
-If you see `"Gateway auth is set to token, but no token is configured"`, the gateway will crash-loop. The `onboard` command sets this up automatically. If manually configuring:
+If you see `"Gateway auth is set to token, but no token is configured"`, the gateway will crash-loop. **Use the onboard wizard** which handles this automatically:
+```bash
+openclaw onboard
+```
+If you must manually configure:
 ```bash
 openclaw config set gateway.auth.token "$(openssl rand -hex 32)"
 ```

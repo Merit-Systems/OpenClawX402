@@ -114,27 +114,66 @@ ssh ubuntu@<public-ip>
 curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 sudo apt-get install -y nodejs
 
-# Install OpenClaw globally
-sudo npm install -g openclaw
+# Install OpenClaw using the official installer (recommended)
+curl -fsSL https://openclaw.ai/install.sh | bash
 
 # Verify
 openclaw --version
 ```
 
-## 7. Configure OpenClaw
+## 7. Configure OpenClaw with Onboard Wizard
+
+The recommended way to configure OpenClaw is using the **onboard wizard**, which handles auth, gateway settings, daemon installation, and channel configuration:
 
 ```bash
-# Set gateway mode
-openclaw config set gateway.mode local
+# Interactive mode (recommended for first-time setup)
+openclaw onboard --install-daemon
 
-# Configure Telegram
-openclaw config set channels.telegram.default.token "<your-telegram-bot-token>"
-
-# Pair yourself (get your Telegram user ID by messaging @userinfobot)
-openclaw pair add <your-telegram-user-id> --channel telegram
+# Or non-interactive mode for scripted setups:
+export ANTHROPIC_API_KEY="your-anthropic-api-key"
+openclaw onboard --non-interactive \
+  --mode local \
+  --auth-choice apiKey \
+  --anthropic-api-key "$ANTHROPIC_API_KEY" \
+  --gateway-port 18789 \
+  --gateway-bind loopback \
+  --install-daemon \
+  --daemon-runtime node
 ```
 
-Also configure git for your bot account (see [`./github.md#3-configure-git-on-ec2`](./github.md#3-configure-git-on-ec2)):
+See [Onboarding Wizard docs](https://docs.openclaw.ai/start/wizard#non-interactive-mode) for all options.
+
+## 8. Add Telegram Channel
+
+After onboarding, add your Telegram bot:
+
+```bash
+# Add Telegram channel via CLI
+openclaw channels add --channel telegram --token "$TELEGRAM_BOT_TOKEN"
+
+# Configure DM policy (choose one):
+# Option A: Pairing (default) - approve users via pairing codes
+openclaw pairing list telegram  # See pending requests after someone DMs the bot
+openclaw pairing approve telegram <CODE>
+
+# Option B: Allowlist - allow specific user IDs
+openclaw config set channels.telegram.dmPolicy allowlist
+openclaw config set channels.telegram.allowFrom '[YOUR_TELEGRAM_USER_ID]'
+
+# Restart gateway to apply changes
+systemctl --user restart openclaw-gateway
+```
+
+**Finding your Telegram User ID** (no third-party bot needed):
+```bash
+# DM your bot, then check the logs:
+openclaw logs --follow
+# Look for "from.id" in the output
+```
+
+## 9. Configure Git for Bot Account
+
+Configure git for your bot account (see [`./github.md#3-configure-git-on-ec2`](./github.md#3-configure-git-on-ec2)):
 
 ```bash
 git config --global user.name "yourname-clawdbot"
@@ -142,78 +181,50 @@ git config --global user.email "yourname+clawdbot@gmail.com"
 git config --global credential.helper store
 ```
 
-## 8. Prepare Secrets
+## 10. Verify Gateway Status
 
-Before creating the service, gather these values:
-
-```bash
-# Generate a random gateway token
-openssl rand -hex 16
-```
-
-**SAVE** the output as your `OPENCLAW_GATEWAY_TOKEN`.
-
-You also need your **Anthropic API key** from [console.anthropic.com](https://console.anthropic.com) (Settings > API Keys).
-
-## 9. Create Systemd Service
+The `onboard --install-daemon` command creates a **user-level** systemd service:
 
 ```bash
-sudo tee /etc/systemd/system/openclaw.service > /dev/null << 'EOF'
-[Unit]
-Description=OpenClaw Gateway
-After=network.target
+# Check gateway status
+openclaw gateway status
+openclaw status --deep  # More detailed probe
 
-[Service]
-Type=simple
-User=ubuntu
-Environment=NODE_ENV=production
-Environment=ANTHROPIC_API_KEY=<your-anthropic-api-key>
-Environment=OPENCLAW_GATEWAY_TOKEN=<choose-a-secret-token>
-ExecStart=/usr/bin/openclaw gateway run --bind loopback --port 18789 --force
-Restart=on-failure
-RestartSec=10
+# Manage the service
+systemctl --user status openclaw-gateway
+systemctl --user restart openclaw-gateway
 
-[Install]
-WantedBy=multi-user.target
-EOF
+# View logs
+openclaw logs --follow
+# Or via journalctl:
+journalctl --user -u openclaw-gateway -f
 ```
 
-Replace:
-- `<your-anthropic-api-key>` with your Anthropic API key
-- `<choose-a-secret-token>` with a random string (e.g., `openssl rand -hex 16`)
-
-## 10. Start Service
-
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable openclaw
-sudo systemctl start openclaw
-
-# Check status
-sudo systemctl status openclaw
-```
+**Note:** The service is at `~/.config/systemd/user/openclaw-gateway.service` (user-level, not system-level).
 
 ## 11. Verify
 
 ```bash
-# Check gateway is running
-openclaw channels status --probe
+# Check gateway and channels status
+openclaw status --deep
+openclaw channels status
+
+# Run health check
+openclaw health
+
+# Run diagnostics if something seems wrong
+openclaw doctor
 ```
 
-You should see:
-```
-- Telegram default: enabled, configured, running, works
-```
-
-Now message your Telegram bot - it should respond.
+Now message your Telegram bot - it should respond (approve pairing if using pairing mode).
 
 ## Troubleshooting
 
 ### Gateway crash loop (lock file)
 ```bash
-sudo systemctl stop openclaw
+systemctl --user stop openclaw-gateway
 rm -rf /tmp/openclaw-*
-sudo systemctl start openclaw
+systemctl --user start openclaw-gateway
 ```
 
 ### Disk full
@@ -222,7 +233,7 @@ sudo systemctl start openclaw
 df -h /
 
 # Clear npm cache
-sudo rm -rf /root/.npm ~/.npm
+rm -rf ~/.npm
 
 # Trim journal logs
 sudo journalctl --vacuum-size=20M
@@ -230,7 +241,16 @@ sudo journalctl --vacuum-size=20M
 
 ### Check logs
 ```bash
-sudo journalctl -u openclaw -n 100 --no-pager
+# Preferred: use the CLI
+openclaw logs --follow
+
+# Or via journalctl (user-level service)
+journalctl --user -u openclaw-gateway -n 100 --no-pager
+```
+
+### Run diagnostics
+```bash
+openclaw doctor
 ```
 
 ## Instance Management

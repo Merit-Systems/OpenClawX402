@@ -45,15 +45,22 @@ You need your Telegram user ID to pair with the bot.
 
 ## What You'll Need Later
 
-When you reach the EC2 setup, you'll use these values:
+When you reach the EC2/local setup, you'll use these CLI commands:
 
 ```bash
-# Configure Telegram token
-openclaw config set channels.telegram.default.token "<your-bot-token>"
+# Add Telegram channel via CLI (recommended)
+openclaw channels add --channel telegram --token "<your-bot-token>"
 
-# Pair your user ID
-openclaw pair add <your-user-id> --channel telegram
+# After someone DMs the bot, approve them via pairing:
+openclaw pairing list telegram
+openclaw pairing approve telegram <CODE>
+
+# Or configure allowlist mode with your user ID:
+openclaw config set channels.telegram.dmPolicy allowlist
+openclaw config set channels.telegram.allowFrom '[<your-user-id>]'
 ```
+
+See the [Telegram channel docs](https://docs.openclaw.ai/channels/telegram) for more options.
 
 ## Security Notes
 
