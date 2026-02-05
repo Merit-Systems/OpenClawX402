@@ -2,7 +2,7 @@
 
 ---
 
-**Next:** After completing this guide, continue to [EC2.md](EC2.md).
+**Next:** After completing this guide, continue to [`./EC2.md`](./EC2.md).
 
 ---
 

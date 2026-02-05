@@ -10,7 +10,7 @@
 
 ---
 
-**Next:** After completing this guide, continue to [x402.md](x402.md).
+**Next:** After completing this guide, continue to [`./x402.md`](./x402.md).
 
 ## 1. AWS CLI Setup
 
@@ -134,7 +134,7 @@ openclaw config set channels.telegram.default.token "<your-telegram-bot-token>"
 openclaw pair add <your-telegram-user-id> --channel telegram
 ```
 
-Also configure git for your bot account (see [github.md](github.md#3-configure-git-on-ec2)):
+Also configure git for your bot account (see [`./github.md#3-configure-git-on-ec2`](./github.md#3-configure-git-on-ec2)):
 
 ```bash
 git config --global user.name "yourname-clawdbot"

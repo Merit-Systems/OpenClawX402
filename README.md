@@ -47,8 +47,8 @@ Once you have the user's answers:
 Based on the user's answers, they need different prerequisites:
 
 ### All Users
-1. **Telegram bot** via BotFather - [telegram.md](telegram.md)
-2. **GitHub account** for the bot (not your main account) - [github.md](github.md)
+1. **Telegram bot** via BotFather - [`./telegram.md`](./telegram.md)
+2. **GitHub account** for the bot (not your main account) - [`./github.md`](./github.md)
 3. **Anthropic API key** from [console.anthropic.com](https://console.anthropic.com)
 
 ### EC2 Users Only
@@ -62,37 +62,48 @@ Based on the user's answers, they need different prerequisites:
 
 | Guide | When to use |
 |-------|-------------|
-| [telegram.md](telegram.md) | All users - Create bot, get token, get your user ID |
-| [github.md](github.md) | All users - Bot GitHub account, token, repo organization |
-| [EC2.md](EC2.md) | **EC2 only** - AWS instance, SSH, security group, systemd |
-| [x402.md](x402.md) | All users - mcporter, @x402scan/mcp, skills installation |
+| [`./telegram.md`](./telegram.md) | All users - Create bot, get token, get your user ID |
+| [`./github.md`](./github.md) | All users - Bot GitHub account, token, repo organization |
+| [`./EC2.md`](./EC2.md) | **EC2 only** - AWS instance, SSH, security group, systemd |
+| [`./x402.md`](./x402.md) | All users - mcporter, @x402scan/mcp, skills installation |
 
 ## Quick Start by Scenario
 
 ### Scenario A: Fresh Install on EC2
-1. Complete [telegram.md](telegram.md)
-2. Complete [github.md](github.md)
-3. Follow [EC2.md](EC2.md) to provision instance
-4. Follow [x402.md](x402.md) to add x402 support
+1. Complete [`./telegram.md`](./telegram.md)
+2. Complete [`./github.md`](./github.md)
+3. Follow [`./EC2.md`](./EC2.md) to provision instance
+4. Follow [`./x402.md`](./x402.md) to add x402 support
 5. Message your Telegram bot
 
 ### Scenario B: Fresh Install on Local Machine
-1. Complete [telegram.md](telegram.md)
-2. Complete [github.md](github.md)
+1. Complete [`./telegram.md`](./telegram.md)
+2. Complete [`./github.md`](./github.md)
 3. **Skip EC2.md** - Install OpenClaw locally instead:
    ```bash
    git clone https://github.com/anthropics/claude-code.git openclaw
    cd openclaw
    npm install
    ```
-4. Follow [x402.md](x402.md) to add x402 support
+4. Follow [`./x402.md`](./x402.md) to add x402 support
 5. Run OpenClaw and message your Telegram bot
 
 ### Scenario C: Existing OpenClaw Installation (any environment)
-1. Verify [telegram.md](telegram.md) is complete
-2. Verify [github.md](github.md) is complete
-3. **Skip to [x402.md](x402.md)** to add x402 support
+1. Verify [`./telegram.md`](./telegram.md) is complete
+2. Verify [`./github.md`](./github.md) is complete
+3. **Skip to [`./x402.md`](./x402.md)** to add x402 support
 4. Message your Telegram bot
+
+## Repository Structure
+
+```
+.
+├── README.md      # This file - overview and agent instructions
+├── telegram.md    # Telegram bot setup via BotFather
+├── github.md      # Bot GitHub account and token setup
+├── EC2.md         # AWS EC2 instance provisioning (optional)
+└── x402.md        # x402 payment integration
+```
 
 ## Architecture
 

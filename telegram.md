@@ -4,7 +4,7 @@ Create a Telegram bot to interact with your OpenClaw agent.
 
 ---
 
-**Next:** After completing this guide, continue to [github.md](github.md).
+**Next:** After completing this guide, continue to [`./github.md`](./github.md).
 
 ---
 
